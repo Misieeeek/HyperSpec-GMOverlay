@@ -2,7 +2,6 @@ function loadOverlay() {
     addBackground();
     addIcon();
     addInputFields();
-    addMailFields();
 }
 
 function addBackground() {
@@ -55,6 +54,7 @@ function addIcon() {
     background.appendChild(icon);
 }
 
+
 function addInputFields() {
     const background = document.getElementById("overlay-background");
 
@@ -63,50 +63,97 @@ function addInputFields() {
         { label: "Adres", id: "input-address", type: "text" },
         { label: "Numer telefonu", id: "input-phone", type: "tel" },
         { label: "Strona", id: "input-website", type: "url" },
-        { label: "Godziny otwarcia", id: "input-hours", type: "text" },
         { label: "Typ miejsca", id: "input-category", type: "text" },
         { label: "Współrzędne Lat", id: "input-lat", type: "text" },
         { label: "Współrzędne Lon", id: "input-lon", type: "text" }
     ];
 
-    fields.forEach((field, index) => {
+    fields.forEach((field) => {
         const container = document.createElement("div");
         container.style.marginBottom = "20px";
 
         const label = document.createElement("label");
         label.innerText = field.label;
         label.htmlFor = field.id;
-        label.style.display = "block";
-        label.style.marginBottom = "5px";
-        label.style.fontSize = "14px";
-        label.style.fontWeight = "bold";
-        label.style.color = "#333";
+
+        Object.assign(label.style, {
+            display: "block",
+            marginBottom: "5px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            color: "#333"
+        });
 
         const input = document.createElement("input");
         input.id = field.id;
         input.type = field.type;
-        if (field.step) input.step = field.step;
-        input.style.width = "100%";
-        input.style.padding = "10px";
-        input.style.fontSize = "14px";
-        input.style.border = "2px solid #ddd";
-        input.style.borderRadius = "5px";
-        input.style.boxSizing = "border-box";
-        input.style.outline = "none";
-        input.style.transition = "border-color 0.3s";
+        Object.assign(input.style, {
+            width: "100%",
+            padding: "10px",
+            fontSize: "14px",
+            border: "2px solid #ddd",
+            borderRadius: "5px",
+            outline: "none",
+            transition: "border-color 0.3s"
+        });
 
-        input.onfocus = () => {
-            input.style.borderColor = "#4CAF50";
-        };
-
-        input.onblur = () => {
-            input.style.borderColor = "#ddd";
-        };
+        input.onfocus = () => input.style.borderColor = "#4CAF50";
+        input.onblur = () => input.style.borderColor = "#ddd";
 
         container.appendChild(label);
         container.appendChild(input);
         background.appendChild(container);
     });
+
+    const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+
+    const hoursContainer = document.createElement("div");
+    hoursContainer.style.marginBottom = "20px";
+
+    const hoursLabel = document.createElement("label");
+    hoursLabel.innerText = "Godziny otwarcia\\ zamknięcia\n (AM -> przed południem, PM -> po południu)";
+    hoursLabel.style.display = "block";
+    hoursLabel.style.marginBottom = "10px";
+    hoursLabel.style.fontWeight = "bold";
+    hoursLabel.style.fontSize = "14px";
+    hoursLabel.style.color = "#333";
+
+    hoursContainer.appendChild(hoursLabel);
+
+    days.forEach((day) => {
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.marginBottom = "8px";
+        row.style.gap = "10px";
+
+        const dayLabel = document.createElement("span");
+        dayLabel.innerText = day;
+        dayLabel.style.width = "100px";
+        dayLabel.style.fontSize = "14px";
+
+        const inputFrom = document.createElement("input");
+        inputFrom.type = "time";
+        inputFrom.id = `hours-${day}-from`;
+        inputFrom.style.flex = "1";
+        inputFrom.style.padding = "6px";
+        inputFrom.setAttribute("lang", "pl");
+
+        const inputTo = document.createElement("input");
+        inputTo.type = "time";
+        inputTo.id = `hours-${day}-to`;
+        inputTo.style.flex = "1";
+        inputTo.style.padding = "6px";
+        inputTo.setAttribute("lang", "pl");
+
+        row.appendChild(dayLabel);
+        row.appendChild(inputFrom);
+        row.appendChild(inputTo);
+
+        hoursContainer.appendChild(row);
+    });
+
+    background.appendChild(hoursContainer);
 
     addButtonUpdateInfo();
 }
@@ -150,140 +197,6 @@ function addButtonUpdateInfo() {
         };
 
         console.log("Dane do aktualizacji:", data);
-    };
-
-    background.appendChild(btn);
-}
-
-function addMailFields() {
-    const background = document.getElementById("overlay-background");
-
-    const separator = document.createElement("div");
-    separator.style.borderTop = "2px solid #ddd";
-    separator.style.marginTop = "40px";
-    separator.style.marginBottom = "30px";
-    background.appendChild(separator);
-
-    const mailTitle = document.createElement("h2");
-    mailTitle.innerText = "Wyślij maila";
-    mailTitle.style.fontSize = "20px";
-    mailTitle.style.marginBottom = "20px";
-    mailTitle.style.color = "#333";
-    background.appendChild(mailTitle);
-
-    const emailContainer = document.createElement("div");
-    emailContainer.style.marginBottom = "20px";
-
-    const emailLabel = document.createElement("label");
-    emailLabel.innerText = "Email odbiorcy";
-    emailLabel.htmlFor = "input-email";
-    emailLabel.style.display = "block";
-    emailLabel.style.marginBottom = "5px";
-    emailLabel.style.fontSize = "14px";
-    emailLabel.style.fontWeight = "bold";
-    emailLabel.style.color = "#333";
-
-    const emailInput = document.createElement("input");
-    emailInput.id = "input-email";
-    emailInput.type = "email";
-    emailInput.style.width = "100%";
-    emailInput.style.padding = "10px";
-    emailInput.style.fontSize = "14px";
-    emailInput.style.border = "2px solid #ddd";
-    emailInput.style.borderRadius = "5px";
-    emailInput.style.boxSizing = "border-box";
-    emailInput.style.outline = "none";
-    emailInput.style.transition = "border-color 0.3s";
-
-    emailInput.onfocus = () => {
-        emailInput.style.borderColor = "#4CAF50";
-    };
-
-    emailInput.onblur = () => {
-        emailInput.style.borderColor = "#ddd";
-    };
-
-    emailContainer.appendChild(emailLabel);
-    emailContainer.appendChild(emailInput);
-    background.appendChild(emailContainer);
-
-    const contentContainer = document.createElement("div");
-    contentContainer.style.marginBottom = "20px";
-
-    const contentLabel = document.createElement("label");
-    contentLabel.innerText = "Treść wiadomości";
-    contentLabel.htmlFor = "input-mail";
-    contentLabel.style.display = "block";
-    contentLabel.style.marginBottom = "5px";
-    contentLabel.style.fontSize = "14px";
-    contentLabel.style.fontWeight = "bold";
-    contentLabel.style.color = "#333";
-
-    const contentTextarea = document.createElement("textarea");
-    contentTextarea.id = "input-mail";
-    contentTextarea.rows = 6;
-    contentTextarea.style.width = "100%";
-    contentTextarea.style.padding = "10px";
-    contentTextarea.style.fontSize = "14px";
-    contentTextarea.style.border = "2px solid #ddd";
-    contentTextarea.style.borderRadius = "5px";
-    contentTextarea.style.boxSizing = "border-box";
-    contentTextarea.style.outline = "none";
-    contentTextarea.style.transition = "border-color 0.3s";
-    contentTextarea.style.resize = "vertical";
-    contentTextarea.style.fontFamily = "inherit";
-
-    contentTextarea.onfocus = () => {
-        contentTextarea.style.borderColor = "#4CAF50";
-    };
-
-    contentTextarea.onblur = () => {
-        contentTextarea.style.borderColor = "#ddd";
-    };
-
-    contentContainer.appendChild(contentLabel);
-    contentContainer.appendChild(contentTextarea);
-    background.appendChild(contentContainer);
-
-    addButtonSendMail();
-}
-
-function addButtonSendMail() {
-    const background = document.getElementById("overlay-background");
-
-    const btn = document.createElement("button");
-    btn.innerText = "Wyślij mail";
-    btn.style.width = "100%";
-    btn.style.padding = "15px 20px";
-    btn.style.background = "#2196F3";
-    btn.style.color = "white";
-    btn.style.fontSize = "16px";
-    btn.style.fontWeight = "bold";
-    btn.style.borderRadius = "8px";
-    btn.style.border = "none";
-    btn.style.cursor = "pointer";
-    btn.style.marginTop = "10px";
-    btn.style.marginBottom = "20px";
-    btn.style.transition = "background 0.3s";
-
-    btn.onmouseover = () => {
-        btn.style.background = "#1976D2";
-    };
-
-    btn.onmouseout = () => {
-        btn.style.background = "#2196F3";
-    };
-
-    btn.onclick = () => {
-        const mailContent = document.getElementById("input-mail").value;
-        const mailTo = document.getElementById("input-email").value;
-        if (!mailTo || !mailContent) {
-            alert("Wypełnij wszystkie pola");
-            return;
-        }
-        console.log("Mail content: ", mailContent);
-        console.log("MailTo: ", mailTo);
-
     };
 
     background.appendChild(btn);
