@@ -54,9 +54,18 @@ function addIcon() {
     background.appendChild(icon);
 }
 
-
 function addInputFields() {
     const background = document.getElementById("overlay-background");
+
+    const counter = document.createElement("div");
+    counter.id = "row-counter";
+    counter.style.textAlign = "center";
+    counter.style.fontSize = "16px";
+    counter.style.fontWeight = "bold";
+    counter.style.marginBottom = "20px";
+    counter.style.color = "#4CAF50";
+    counter.innerText = "Wiersz: 0 / 0";
+    background.appendChild(counter);
 
     const fields = [
         { label: "Nazwa", id: "input-name", type: "text" },
@@ -94,7 +103,8 @@ function addInputFields() {
             border: "2px solid #ddd",
             borderRadius: "5px",
             outline: "none",
-            transition: "border-color 0.3s"
+            transition: "border-color 0.3s",
+            boxSizing: "border-box"
         });
 
         input.onfocus = () => input.style.borderColor = "#4CAF50";
@@ -105,18 +115,30 @@ function addInputFields() {
         background.appendChild(container);
     });
 
+    addOpeningHours(background);
+
+    addStudentDiscountsField(background);
+
+    addUpdatedCheckbox(background);
+    addSkipCheckbox(background);
+
+    addButtonUpdateInfo();
+}
+
+function addOpeningHours(background) {
     const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
 
     const hoursContainer = document.createElement("div");
     hoursContainer.style.marginBottom = "20px";
 
     const hoursLabel = document.createElement("label");
-    hoursLabel.innerText = "Godziny otwarcia\\ zamknięcia\n (AM -> przed południem, PM -> po południu)";
+    hoursLabel.innerText = "Godziny otwarcia/zamknięcia\n(AM -> przed południem, PM -> po południu)";
     hoursLabel.style.display = "block";
     hoursLabel.style.marginBottom = "10px";
     hoursLabel.style.fontWeight = "bold";
     hoursLabel.style.fontSize = "14px";
     hoursLabel.style.color = "#333";
+    hoursLabel.style.whiteSpace = "pre-line";
 
     hoursContainer.appendChild(hoursLabel);
 
@@ -154,16 +176,107 @@ function addInputFields() {
     });
 
     background.appendChild(hoursContainer);
-
-    addButtonUpdateInfo();
 }
 
+function addStudentDiscountsField(background) {
+    const container = document.createElement("div");
+    container.style.marginBottom = "20px";
+
+    const label = document.createElement("label");
+    label.innerText = "Zniżki studenckie";
+    label.htmlFor = "input-student-discounts";
+    Object.assign(label.style, {
+        display: "block",
+        marginBottom: "5px",
+        fontSize: "14px",
+        fontWeight: "bold",
+        color: "#333"
+    });
+
+    const textarea = document.createElement("textarea");
+    textarea.id = "input-student-discounts";
+    textarea.placeholder = "Opisz dostępne zniżki dla studentów...";
+    Object.assign(textarea.style, {
+        width: "100%",
+        padding: "10px",
+        fontSize: "14px",
+        border: "2px solid #ddd",
+        borderRadius: "5px",
+        outline: "none",
+        transition: "border-color 0.3s",
+        minHeight: "80px",
+        resize: "vertical",
+        fontFamily: "inherit",
+        boxSizing: "border-box"
+    });
+
+    textarea.onfocus = () => textarea.style.borderColor = "#4CAF50";
+    textarea.onblur = () => textarea.style.borderColor = "#ddd";
+
+    container.appendChild(label);
+    container.appendChild(textarea);
+    background.appendChild(container);
+}
+
+function addUpdatedCheckbox(background) {
+    const container = document.createElement("div");
+    container.style.marginBottom = "20px";
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.gap = "10px";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "input-verified";
+    checkbox.style.width = "20px";
+    checkbox.style.height = "20px";
+    checkbox.style.cursor = "pointer";
+
+    const label = document.createElement("label");
+    label.innerText = "Potwierdzenie telefoniczne lub internetowe";
+    label.htmlFor = "input-verified";
+    label.style.fontSize = "14px";
+    label.style.fontWeight = "bold";
+    label.style.color = "#333";
+    label.style.cursor = "pointer";
+
+    container.appendChild(checkbox);
+    container.appendChild(label);
+    background.appendChild(container);
+}
+
+function addSkipCheckbox(background) {
+    const container = document.createElement("div");
+    container.style.marginBottom = "20px";
+    container.style.display = "flex";
+    container.style.alignItems = "center";
+    container.style.gap = "10px";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = "input-skip";
+    checkbox.style.width = "20px";
+    checkbox.style.height = "20px";
+    checkbox.style.cursor = "pointer";
+
+    const label = document.createElement("label");
+    label.innerText = "Brak zniżek, informacji na temat obiektu lub obiekt jest nieczynny\\nie istnieje";
+    label.htmlFor = "input-skip";
+    label.style.fontSize = "14px";
+    label.style.fontWeight = "bold";
+    label.style.color = "#333";
+    label.style.cursor = "pointer";
+
+    container.appendChild(checkbox);
+    container.appendChild(label);
+    background.appendChild(container);
+}
 
 function addButtonUpdateInfo() {
     const background = document.getElementById("overlay-background");
 
     const btn = document.createElement("button");
-    btn.innerText = "Update info";
+    btn.innerText = "Update info - Następna lokalizacja";
     btn.style.width = "100%";
     btn.style.padding = "15px 20px";
     btn.style.background = "green";
@@ -185,21 +298,62 @@ function addButtonUpdateInfo() {
     };
 
     btn.onclick = () => {
-        const data = {
-            nazwa: document.getElementById("input-name").value,
-            adres: document.getElementById("input-address").value,
-            telefon: document.getElementById("input-phone").value,
-            strona: document.getElementById("input-website").value,
-            godziny: document.getElementById("input-hours").value,
-            kategoria: document.getElementById("input-category").value,
-            lat: document.getElementById("input-lat").value,
-            lon: document.getElementById("input-lon").value
-        };
-
-        console.log("Dane do aktualizacji:", data);
+        if (typeof csvNavigator !== 'undefined') {
+            csvNavigator.goToNextLocation();
+        } else {
+            alert("Navigator nie jest załadowany!");
+        }
     };
 
     background.appendChild(btn);
+
+    const exportBtn = document.createElement("button");
+    exportBtn.innerText = "Eksportuj zaktualizowany CSV";
+    exportBtn.style.width = "100%";
+    exportBtn.style.padding = "12px 20px";
+    exportBtn.style.background = "#2196F3";
+    exportBtn.style.color = "white";
+    exportBtn.style.fontSize = "14px";
+    exportBtn.style.fontWeight = "bold";
+    exportBtn.style.borderRadius = "8px";
+    exportBtn.style.border = "none";
+    exportBtn.style.cursor = "pointer";
+    exportBtn.style.marginTop = "10px";
+    exportBtn.style.transition = "background 0.3s";
+
+    exportBtn.onmouseover = () => {
+        exportBtn.style.background = "#0b7dda";
+    };
+
+    exportBtn.onmouseout = () => {
+        exportBtn.style.background = "#2196F3";
+    };
+
+    exportBtn.onclick = () => {
+        if (typeof csvNavigator !== 'undefined') {
+            csvNavigator.saveCurrentRowData();
+            csvNavigator.exportToCSV();
+            alert("CSV został pobrany!");
+        } else {
+            alert("Navigator nie jest załadowany!");
+        }
+    };
+
+    background.appendChild(exportBtn);
+}
+
+function collectFormData() {
+    return {
+        nazwa: document.getElementById("input-name").value,
+        adres: document.getElementById("input-address").value,
+        telefon: document.getElementById("input-phone").value,
+        strona: document.getElementById("input-website").value,
+        kategoria: document.getElementById("input-category").value,
+        lat: document.getElementById("input-lat").value,
+        lon: document.getElementById("input-lon").value,
+        znizki_studenckie: document.getElementById("input-student-discounts").value,
+        zaktualizowano: document.getElementById("input-updated").checked
+    };
 }
 
 window.addEventListener("load", () => {
