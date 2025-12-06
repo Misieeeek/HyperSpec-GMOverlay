@@ -2,6 +2,7 @@ function loadOverlay() {
     addBackground();
     addIcon();
     addInputFields();
+    addResetButton();
 }
 
 function addBackground() {
@@ -354,6 +355,28 @@ function collectFormData() {
         znizki_studenckie: document.getElementById("input-student-discounts").value,
         zaktualizowano: document.getElementById("input-updated").checked
     };
+}
+
+function addResetButton() {
+    const background = document.getElementById("overlay-background");
+
+    const resetBtn = document.createElement("button");
+    resetBtn.innerText = "⚠️ ZRESETUJ do pliku CSV";
+    resetBtn.style.width = "100%";
+    resetBtn.style.padding = "10px";
+    resetBtn.style.marginTop = "20px";
+    resetBtn.style.background = "#d9534f";
+    resetBtn.style.color = "white";
+    resetBtn.style.border = "none";
+    resetBtn.style.borderRadius = "5px";
+    resetBtn.style.cursor = "pointer";
+    resetBtn.style.fontWeight = "bold";
+
+    resetBtn.onclick = () => {
+        csvNavigator.resetToOriginal();
+    };
+
+    background.appendChild(resetBtn);
 }
 
 window.addEventListener("load", () => {
