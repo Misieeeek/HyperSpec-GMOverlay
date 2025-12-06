@@ -33,7 +33,7 @@ function addIcon() {
     const background = document.getElementById("overlay-background");
 
     const icon = document.createElement("img");
-    icon.src = chrome.runtime.getURL("icon.png");
+    icon.src = chrome.runtime.getURL("assets/icon.png");
     icon.alt = "Hyperspec Logo";
     icon.style.position = "absolute";
     icon.style.top = "15px";
