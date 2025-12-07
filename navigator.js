@@ -457,8 +457,52 @@ class CSVNavigator {
     resetToOriginal() {
         if (confirm('Czy na pewno chcesz zresetować wszystkie dane do oryginalnego CSV? Wszystkie zmiany zostaną utracone!')) {
             this.clearLocalStorage();
-            location.reload();
+            window.location.href = 'https://www.google.com/maps';
         }
+    }
+    goToNextLocation() {
+        const isVerified = document.getElementById('input-verified')?.checked || false;
+
+        if (isVerified && typeof formValidator !== 'undefined') {
+            const formData = {
+                name: document.getElementById('input-name')?.value || '',
+                address: document.getElementById('input-address')?.value || '',
+                phone: document.getElementById('input-phone')?.value || '',
+            };
+
+            const validationResult = formValidator.validate(formData, isVerified);
+
+            if (!validationResult.valid) {
+                formValidator.showErrors();
+                return false;
+            }
+
+            if (validationResult.data.phone) {
+                document.getElementById('input-phone').value = validationResult.data.phone;
+            }
+        }
+
+        this.saveCurrentRowData();
+
+        const nextRow = this.nextRow();
+
+        if (!nextRow) {
+            alert("To jest ostatni wiersz w pliku CSV!");
+            return false;
+        }
+
+        const coords = this.getCurrentCoordinates();
+
+        if (!coords) {
+            alert("Nie można odczytać współrzędnych z tego wiersza!");
+            return false;
+        }
+
+        console.log(`Przechodząc do wiersza ${this.currentIndex + 1}/${this.csvData.length}`);
+        console.log(`Współrzędne: ${coords.lat}, ${coords.lon}`);
+
+        this.updateGoogleMaps(coords.lat, coords.lon);
+        return true;
     }
 }
 

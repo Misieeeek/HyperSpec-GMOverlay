@@ -9,7 +9,7 @@
   "content_scripts": [
     {
       "matches": ["https://www.google.com/maps/*"],
-      "js": ["content.js", "navigator.js"],
+      "js": ["content.js", "navigator.js", "formValidator.js"],
       "run_at": "document_idle"
     }
   ],
