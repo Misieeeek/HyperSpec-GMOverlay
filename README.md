@@ -38,32 +38,35 @@ Za każdym razem wtyczka przejdzie do pierwszej lokalizacji w pliku .csv która 
 > [!CAUTION]
 > Współrzędne mogą nie do końca się pokrywać ze znacznikiem na mapie.
 
-Co zrobić w takim przypadku?
+### Co zrobić jak współrzędne nie są dokładnie w tym miejscu?
 
 - Jeżeli na początku nie widać jakiegoś obiektu to poświęć chwilę aby go znaleźć w aktualnym obszarze.
 - Jeżeli dalej nic nie widać to spróbuj przybliżyć do tej lokalizacji i poszukaj w pobliżu markera.
 - Jeżeli dalej nie widać tego miejsa, spróbuj wpisać jego nazwę w wyszukiwarce.
-- Jeżeli to także nie zadziała, zaznacz ten checkbox: "Brak zniżek, informacji na temat obiektu lub obiekt jest nieczynny\nie istnieje" oraz kliknij na przycik aby przejść do następnej lokalizacji, wtedy dane na temat tego obiektu zostaną całkowicie pominięte w dalszej analizie.
+- Jeżeli to także nie zadziała, zaznacz ten checkbox: "Brak zniżek, informacji na temat obiektu lub obiekt jest nieczynny\nie istnieje" oraz kliknij na przycisk aby przejść do następnej lokalizacji, wtedy dane na temat tego obiektu zostaną całkowicie pominięte w dalszej analizie.
 
 > [!NOTE]
 > Korzystaj z checkboxa "Brak zniżek, informacji na temat obiektu lub obiekt jest nieczynny\nie istnieje", tak jak sama jego nazwa wskazuje.
 
 - Kiedy nie obsługuje zniżek
-- Kiedy jest za mało informacji na temat obiektu (głównie chodzi tu o samą nazwę obiektu)
 - Kiedy obiekt jest zamknięty na stałe lub na dobre
 - Kiedy nie istnieje
 
-Jak pisać adres obiektu?
+### Jak pisać adres obiektu?
 
 Najlepiej jest kopiować adres z markera.
 
 > [!IMPORTANT]
 > W przypadku braku danych na temat np. adresu, numeru telefonu, strony, typu miejsca czy godzin otwarcia i zamknięcia, to pozostaw puste te miejsca i nie zaznaczaj checkboxa aby pominąć jeżeli nie trzeba.
 
-Co mam pisać w zniżkach studenckich?
+### Co pisać w zniżkach studenckich?
 
 Najpierw zbierz tyle informacji ile możesz a następnie ubierz jakoś to w słowa albo napisz w podpunktach żniżki.
 
-Checkbox "Potwierdzenie telefoniczne lub internetowe", kiedy z tego korzystać?
+### Checkbox "Potwierdzenie telefoniczne lub internetowe", kiedy z tego korzystać?
 
 W momencie gdy wszystkie dane zostaną zebrane oraz gdy zniżki zostaną wpisane, zaznacz ten checkbox a następnie kliknij przycisk aby przejść do następnej lokalizacji. W ten sposób zatwierdzisz dane i nie będą one brane w dalszym sprawdzaniu.
+
+### Przycisk '⚠️ ZRESETUJ do pliku CSV' 
+
+Usuwa dane z LocalStorage. Najlepiej nie klikać. 
