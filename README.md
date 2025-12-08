@@ -59,10 +59,6 @@ Najlepiej jest kopiować adres z markera.
 > [!IMPORTANT]
 > W przypadku braku danych na temat np. adresu, numeru telefonu, strony, typu miejsca czy godzin otwarcia i zamknięcia, to pozostaw puste te miejsca i nie zaznaczaj checkboxa aby pominąć jeżeli nie trzeba.
 
-### Co pisać w zniżkach studenckich?
-
-Najpierw zbierz tyle informacji ile możesz a następnie ubierz jakoś to w słowa albo napisz w podpunktach żniżki.
-
 ### Checkbox "Potwierdzenie telefoniczne lub internetowe", kiedy z tego korzystać?
 
 W momencie gdy wszystkie dane zostaną zebrane oraz gdy zniżki zostaną wpisane, zaznacz ten checkbox a następnie kliknij przycisk aby przejść do następnej lokalizacji. W ten sposób zatwierdzisz dane i nie będą one brane w dalszym sprawdzaniu.

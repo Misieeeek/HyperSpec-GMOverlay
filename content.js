@@ -72,10 +72,7 @@ function addInputFields() {
         { label: "Nazwa", id: "input-name", type: "text" },
         { label: "Adres", id: "input-address", type: "text" },
         { label: "Numer telefonu", id: "input-phone", type: "tel" },
-        { label: "Strona", id: "input-website", type: "url" },
-        { label: "Typ miejsca", id: "input-category", type: "text" },
-        { label: "Współrzędne Lat", id: "input-lat", type: "text" },
-        { label: "Współrzędne Lon", id: "input-lon", type: "text" }
+        { label: "Strona", id: "input-website", type: "url" }
     ];
 
     fields.forEach((field) => {
@@ -116,14 +113,122 @@ function addInputFields() {
         background.appendChild(container);
     });
 
+    addCategorySelect(background);
+    addCoordinatesFields(background);
     addOpeningHours(background);
-
-    addStudentDiscountsField(background);
-
+    addStudentDiscountsFields(background);
     addUpdatedCheckbox(background);
     addSkipCheckbox(background);
-
     addButtonUpdateInfo();
+}
+
+function addCategorySelect(background) {
+    const container = document.createElement("div");
+    container.style.marginBottom = "20px";
+
+    const label = document.createElement("label");
+    label.innerText = "Typ miejsca";
+    label.htmlFor = "input-category";
+    Object.assign(label.style, {
+        display: "block",
+        marginBottom: "5px",
+        fontSize: "14px",
+        fontWeight: "bold",
+        color: "#333"
+    });
+
+    const select = document.createElement("select");
+    select.id = "input-category";
+    Object.assign(select.style, {
+        width: "100%",
+        padding: "10px",
+        fontSize: "14px",
+        border: "2px solid #ddd",
+        borderRadius: "5px",
+        outline: "none",
+        transition: "border-color 0.3s",
+        boxSizing: "border-box",
+        cursor: "pointer"
+    });
+
+    const categories = [
+        "Wybierz kategorię",
+        "Restauracja",
+        "Kawiarnia",
+        "Bar",
+        "Pub",
+        "Klub nocny",
+        "Fast food",
+        "Kultura i Rozrywka",
+        "Muzea i Galerie",
+        "Edukacja i Biblioteki",
+        "Sport i Rekreacja",
+        "Klub nocny",
+        "Inne"
+    ];
+
+    categories.forEach((category, index) => {
+        const option = document.createElement("option");
+        option.value = index === 0 ? "" : category;
+        option.innerText = category;
+        if (index === 0) {
+            option.disabled = true;
+            option.selected = true;
+        }
+        select.appendChild(option);
+    });
+
+    select.onfocus = () => select.style.borderColor = "#4CAF50";
+    select.onblur = () => select.style.borderColor = "#ddd";
+
+    container.appendChild(label);
+    container.appendChild(select);
+    background.appendChild(container);
+}
+
+function addCoordinatesFields(background) {
+    const coordFields = [
+        { label: "Współrzędne Lat", id: "input-lat" },
+        { label: "Współrzędne Lon", id: "input-lon" }
+    ];
+
+    coordFields.forEach((field) => {
+        const container = document.createElement("div");
+        container.style.marginBottom = "20px";
+
+        const label = document.createElement("label");
+        label.innerText = field.label;
+        label.htmlFor = field.id;
+
+        Object.assign(label.style, {
+            display: "block",
+            marginBottom: "5px",
+            fontSize: "14px",
+            fontWeight: "bold",
+            color: "#333"
+        });
+
+        const input = document.createElement("input");
+        input.id = field.id;
+        input.type = "text";
+        input.readOnly = true;
+        Object.assign(input.style, {
+            width: "100%",
+            padding: "10px",
+            fontSize: "14px",
+            border: "2px solid #ddd",
+            borderRadius: "5px",
+            outline: "none",
+            boxSizing: "border-box",
+            backgroundColor: "#f5f5f5",
+            cursor: "not-allowed",
+            color: "#666"
+        });
+
+        container.appendChild(label);
+        container.appendChild(input);
+        background.appendChild(container);
+    });
 }
 
 function addOpeningHours(background) {
@@ -179,44 +284,180 @@ function addOpeningHours(background) {
     background.appendChild(hoursContainer);
 }
 
-function addStudentDiscountsField(background) {
+function addStudentDiscountsFields(background) {
     const container = document.createElement("div");
     container.style.marginBottom = "20px";
 
     const label = document.createElement("label");
     label.innerText = "Zniżki studenckie";
-    label.htmlFor = "input-student-discounts";
     Object.assign(label.style, {
         display: "block",
-        marginBottom: "5px",
+        marginBottom: "10px",
         fontSize: "14px",
         fontWeight: "bold",
         color: "#333"
     });
 
-    const textarea = document.createElement("textarea");
-    textarea.id = "input-student-discounts";
-    textarea.placeholder = "Opisz dostępne zniżki dla studentów...";
-    Object.assign(textarea.style, {
+    container.appendChild(label);
+
+    const discountsWrapper = document.createElement("div");
+    discountsWrapper.id = "discounts-wrapper";
+    container.appendChild(discountsWrapper);
+
+    addDiscountRow(discountsWrapper);
+
+    const addBtn = document.createElement("button");
+    addBtn.innerText = "+ Dodaj zniżkę";
+    addBtn.type = "button";
+    Object.assign(addBtn.style, {
         width: "100%",
-        padding: "10px",
-        fontSize: "14px",
-        border: "2px solid #ddd",
+        padding: "8px",
+        marginTop: "10px",
+        background: "#4CAF50",
+        color: "white",
+        border: "none",
         borderRadius: "5px",
-        outline: "none",
-        transition: "border-color 0.3s",
-        minHeight: "80px",
-        resize: "vertical",
-        fontFamily: "inherit",
+        cursor: "pointer",
+        fontSize: "14px",
+        fontWeight: "bold"
+    });
+
+    addBtn.onclick = () => addDiscountRow(discountsWrapper);
+
+    container.appendChild(addBtn);
+    background.appendChild(container);
+}
+
+function addDiscountRow(wrapper) {
+    const row = document.createElement("div");
+    row.className = "discount-row";
+    row.style.marginBottom = "15px";
+    row.style.padding = "15px";
+    row.style.border = "2px solid #ddd";
+    row.style.borderRadius = "5px";
+    row.style.position = "relative";
+
+    const valueContainer = document.createElement("div");
+    valueContainer.style.marginBottom = "10px";
+
+    const valueLabel = document.createElement("label");
+    valueLabel.innerText = "Wartość";
+    valueLabel.style.display = "block";
+    valueLabel.style.marginBottom = "5px";
+    valueLabel.style.fontSize = "13px";
+    valueLabel.style.fontWeight = "bold";
+
+    const valueInput = document.createElement("input");
+    valueInput.type = "number";
+    valueInput.step = "0.01";
+    valueInput.className = "discount-value";
+    valueInput.placeholder = "np. 15";
+    Object.assign(valueInput.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
         boxSizing: "border-box"
     });
 
-    textarea.onfocus = () => textarea.style.borderColor = "#4CAF50";
-    textarea.onblur = () => textarea.style.borderColor = "#ddd";
+    valueContainer.appendChild(valueLabel);
+    valueContainer.appendChild(valueInput);
 
-    container.appendChild(label);
-    container.appendChild(textarea);
-    background.appendChild(container);
+    const typeContainer = document.createElement("div");
+    typeContainer.style.marginBottom = "10px";
+
+    const typeLabel = document.createElement("label");
+    typeLabel.innerText = "Typ";
+    typeLabel.style.display = "block";
+    typeLabel.style.marginBottom = "5px";
+    typeLabel.style.fontSize = "13px";
+    typeLabel.style.fontWeight = "bold";
+
+    const typeSelect = document.createElement("select");
+    typeSelect.className = "discount-type";
+    Object.assign(typeSelect.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    });
+
+    const percentOption = document.createElement("option");
+    percentOption.value = "percent";
+    percentOption.innerText = "Procent (%)";
+
+    const priceOption = document.createElement("option");
+    priceOption.value = "price";
+    priceOption.innerText = "Cena (zł)";
+
+    typeSelect.appendChild(percentOption);
+    typeSelect.appendChild(priceOption);
+
+    typeContainer.appendChild(typeLabel);
+    typeContainer.appendChild(typeSelect);
+
+    const conditionsContainer = document.createElement("div");
+    conditionsContainer.style.marginBottom = "10px";
+
+    const conditionsLabel = document.createElement("label");
+    conditionsLabel.innerText = "Warunki";
+    conditionsLabel.style.display = "block";
+    conditionsLabel.style.marginBottom = "5px";
+    conditionsLabel.style.fontSize = "13px";
+    conditionsLabel.style.fontWeight = "bold";
+
+    const conditionsInput = document.createElement("input");
+    conditionsInput.type = "text";
+    conditionsInput.className = "discount-conditions";
+    conditionsInput.placeholder = "np. Tylko dla studentów AGH";
+    Object.assign(conditionsInput.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    });
+
+    conditionsContainer.appendChild(conditionsLabel);
+    conditionsContainer.appendChild(conditionsInput);
+
+    const removeBtn = document.createElement("button");
+    removeBtn.innerText = "✕";
+    removeBtn.type = "button";
+    Object.assign(removeBtn.style, {
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        width: "25px",
+        height: "25px",
+        background: "#d9534f",
+        color: "white",
+        border: "none",
+        borderRadius: "50%",
+        cursor: "pointer",
+        fontSize: "16px",
+        lineHeight: "1",
+        padding: "0"
+    });
+
+    removeBtn.onclick = () => {
+        if (wrapper.children.length > 1) {
+            row.remove();
+        } else {
+            alert("Musisz mieć przynajmniej jedną zniżkę!");
+        }
+    };
+
+    row.appendChild(valueContainer);
+    row.appendChild(typeContainer);
+    row.appendChild(conditionsContainer);
+    row.appendChild(removeBtn);
+
+    wrapper.appendChild(row);
 }
 
 function addUpdatedCheckbox(background) {
@@ -344,6 +585,8 @@ function addButtonUpdateInfo() {
 }
 
 function collectFormData() {
+    const discounts = collectDiscountsData();
+
     return {
         nazwa: document.getElementById("input-name").value,
         adres: document.getElementById("input-address").value,
@@ -352,9 +595,31 @@ function collectFormData() {
         kategoria: document.getElementById("input-category").value,
         lat: document.getElementById("input-lat").value,
         lon: document.getElementById("input-lon").value,
-        znizki_studenckie: document.getElementById("input-student-discounts").value,
-        zaktualizowano: document.getElementById("input-updated").checked
+        znizki_studenckie: JSON.stringify(discounts),
+        zaktualizowano: document.getElementById("input-verified").checked
     };
+}
+
+function collectDiscountsData() {
+    const wrapper = document.getElementById("discounts-wrapper");
+    const rows = wrapper.querySelectorAll(".discount-row");
+    const discounts = [];
+
+    rows.forEach(row => {
+        const value = parseFloat(row.querySelector(".discount-value").value);
+        const type = row.querySelector(".discount-type").value;
+        const conditions = row.querySelector(".discount-conditions").value;
+
+        if (!isNaN(value) && value > 0 && conditions.trim()) {
+            discounts.push({
+                value: value,
+                type: type,
+                conditions: conditions.trim()
+            });
+        }
+    });
+
+    return discounts;
 }
 
 function addResetButton() {

@@ -39,6 +39,38 @@ class FormValidator {
         return { valid: true, formatted: formatted };
     }
 
+    validateFirstDiscount() {
+        const wrapper = document.getElementById("discounts-wrapper");
+        if (!wrapper) return;
+
+        const firstRow = wrapper.querySelector(".discount-row");
+
+        if (!firstRow) {
+            this.errors.push("⚠️ Zaznaczono 'Potwierdzenie', więc musisz dodać przynajmniej jedną zniżkę!");
+            return;
+        }
+
+        const valueInput = firstRow.querySelector(".discount-value");
+        const conditionsInput = firstRow.querySelector(".discount-conditions");
+
+        const value = valueInput ? valueInput.value : '';
+        const conditions = conditionsInput ? conditionsInput.value : '';
+
+        if (!value || value.trim() === '' || parseFloat(value) <= 0) {
+            this.errors.push("⚠️ Pierwsza zniżka: Uzupełnij wartość zniżki (musi być większa od 0)!");
+            if (valueInput) valueInput.style.borderColor = "red";
+        } else {
+            if (valueInput) valueInput.style.borderColor = "#ddd";
+        }
+
+        if (!conditions || conditions.trim() === '') {
+            this.errors.push("⚠️ Pierwsza zniżka: Opisz warunki otrzymania zniżki (np. 'Legitymacja')!");
+            if (conditionsInput) conditionsInput.style.borderColor = "red";
+        } else {
+            if (conditionsInput) conditionsInput.style.borderColor = "#ddd";
+        }
+    }
+
     validate(formData, isVerified) {
         this.errors = [];
 
@@ -52,6 +84,8 @@ class FormValidator {
         if (phoneResult.valid && phoneResult.formatted) {
             formData.phone = phoneResult.formatted;
         }
+
+        this.validateFirstDiscount();
 
         return {
             valid: this.errors.length === 0,
@@ -68,5 +102,4 @@ class FormValidator {
 }
 
 const formValidator = new FormValidator();
-
 window.formValidator = formValidator;

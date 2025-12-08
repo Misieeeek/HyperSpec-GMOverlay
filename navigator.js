@@ -123,20 +123,34 @@ class CSVNavigator {
     }
 
     nextRow() {
-        if (this.currentIndex < this.csvData.length - 1) {
-            this.currentIndex++;
-            this.saveToLocalStorage();
-            return this.getCurrentRow();
+        let tempIndex = this.currentIndex;
+
+        while (tempIndex < this.csvData.length - 1) {
+            tempIndex++;
+            const row = this.csvData[tempIndex];
+
+            if (row['skip'] !== 'true') {
+                this.currentIndex = tempIndex;
+                this.saveToLocalStorage();
+                return this.getCurrentRow();
+            }
         }
         return null;
     }
 
     previousRow() {
-        if (this.currentIndex > 0) {
-            this.currentIndex--;
-            this.saveToLocalStorage();
-            return this.getCurrentRow();
+        let tempIndex = this.currentIndex;
+
+        while (tempIndex > 0) {
+            tempIndex--;
+            const row = this.csvData[tempIndex];
+            if (row['skip'] !== 'true') {
+                this.currentIndex = tempIndex;
+                this.saveToLocalStorage();
+                return this.getCurrentRow();
+            }
         }
+
         return null;
     }
 
@@ -188,6 +202,27 @@ class CSVNavigator {
     }
 
     goToNextLocation() {
+        const isVerified = document.getElementById('input-verified')?.checked || false;
+
+        if (isVerified && typeof formValidator !== 'undefined') {
+            const formData = {
+                name: document.getElementById('input-name')?.value || '',
+                address: document.getElementById('input-address')?.value || '',
+                phone: document.getElementById('input-phone')?.value || '',
+            };
+
+            const validationResult = formValidator.validate(formData, isVerified);
+
+            if (!validationResult.valid) {
+                formValidator.showErrors();
+                return false;
+            }
+
+            if (validationResult.data.phone) {
+                document.getElementById('input-phone').value = validationResult.data.phone;
+            }
+        }
+
         this.saveCurrentRowData();
 
         const nextRow = this.nextRow();
@@ -241,18 +276,15 @@ class CSVNavigator {
 
         for (let i = 0; i < this.csvData.length; i++) {
             const row = this.csvData[i];
-            if (row['verified'] !== 'true' || row['skip'] !== 'false') {
+            if (row['verified'] !== 'true' && row['skip'] !== 'true') {
                 foundIndex = i;
                 break;
             }
         }
 
         if (foundIndex === -1) {
-            console.log("Wszystkie lokalizacje zostały już zbadane!");
-            alert("Gratulacje! Wszystkie lokalizacje zostały już sprawdzone.");
-            this.currentIndex = 0;
-            this.saveToLocalStorage();
-            this.fillFormWithCurrentRow();
+            console.log("Wszystkie lokalizacje zostały już zbadane (lub pominięte)!");
+            alert("Gratulacje! Wszystkie dostępne lokalizacje zostały sprawdzone.");
             return false;
         }
 
@@ -268,7 +300,6 @@ class CSVNavigator {
         }
 
         this.fillFormWithCurrentRow();
-
         this.updateGoogleMaps(coords.lat, coords.lon);
         return true;
     }
@@ -284,13 +315,103 @@ class CSVNavigator {
         currentRow['type'] = document.getElementById('input-category')?.value || '';
         currentRow['lat'] = document.getElementById('input-lat')?.value || '';
         currentRow['lon'] = document.getElementById('input-lon')?.value || '';
-        currentRow['student_discounts'] = document.getElementById('input-student-discounts')?.value || '';
+
+        const discounts = this.collectDiscountsFromForm();
+        currentRow['student_discounts'] = JSON.stringify(discounts);
+
         currentRow['verified'] = document.getElementById('input-verified')?.checked ? 'true' : 'false';
         currentRow['skip'] = document.getElementById('input-skip')?.checked ? 'true' : 'false';
+
+        const openingHours = this.collectOpeningHoursFromForm();
+        if (openingHours) {
+            currentRow['opening_hours'] = openingHours;
+        }
 
         console.log('Zapisano dane wiersza:', this.currentIndex, currentRow);
 
         this.saveToLocalStorage();
+    }
+
+    collectDiscountsFromForm() {
+        const wrapper = document.getElementById("discounts-wrapper");
+        if (!wrapper) return [];
+
+        const rows = wrapper.querySelectorAll(".discount-row");
+        const discounts = [];
+
+        rows.forEach(row => {
+            const valueInput = row.querySelector(".discount-value");
+            const typeSelect = row.querySelector(".discount-type");
+            const conditionsInput = row.querySelector(".discount-conditions");
+
+            if (valueInput && typeSelect && conditionsInput) {
+                const value = parseFloat(valueInput.value);
+                const type = typeSelect.value;
+                const conditions = conditionsInput.value.trim();
+
+                if (!isNaN(value) && value > 0 && conditions) {
+                    discounts.push({
+                        value: value,
+                        type: type,
+                        conditions: conditions
+                    });
+                }
+            }
+        });
+
+        return discounts;
+    }
+
+    collectOpeningHoursFromForm() {
+        const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        const dayAbbrev = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
+        const hoursMap = {};
+
+        days.forEach((day, index) => {
+            const fromInput = document.getElementById(`hours-${day}-from`);
+            const toInput = document.getElementById(`hours-${day}-to`);
+
+            if (fromInput && toInput && fromInput.value && toInput.value) {
+                const timeRange = `${fromInput.value}-${toInput.value}`;
+                if (!hoursMap[timeRange]) {
+                    hoursMap[timeRange] = [];
+                }
+                hoursMap[timeRange].push(index);
+            }
+        });
+
+        const parts = [];
+        Object.keys(hoursMap).forEach(timeRange => {
+            const dayIndices = hoursMap[timeRange];
+            const dayStr = this.formatDayRange(dayIndices, dayAbbrev);
+            parts.push(`${dayStr} ${timeRange}`);
+        });
+
+        return parts.join('; ');
+    }
+
+    formatDayRange(indices, dayAbbrev) {
+        if (indices.length === 0) return '';
+        if (indices.length === 1) return dayAbbrev[indices[0]];
+
+        indices.sort((a, b) => a - b);
+
+        const ranges = [];
+        let start = indices[0];
+        let end = indices[0];
+
+        for (let i = 1; i < indices.length; i++) {
+            if (indices[i] === end + 1) {
+                end = indices[i];
+            } else {
+                ranges.push(start === end ? dayAbbrev[start] : `${dayAbbrev[start]}-${dayAbbrev[end]}`);
+                start = indices[i];
+                end = indices[i];
+            }
+        }
+        ranges.push(start === end ? dayAbbrev[start] : `${dayAbbrev[start]}-${dayAbbrev[end]}`);
+
+        return ranges.join(',');
     }
 
     fillFormWithCurrentRow() {
@@ -304,8 +425,7 @@ class CSVNavigator {
             'website': 'input-website',
             'type': 'input-category',
             'lat': 'input-lat',
-            'lon': 'input-lon',
-            'student_discounts': 'input-student-discounts'
+            'lon': 'input-lon'
         };
 
         Object.keys(fieldMapping).forEach(csvColumn => {
@@ -317,6 +437,8 @@ class CSVNavigator {
             }
         });
 
+        this.fillDiscountsForm(row['student_discounts']);
+
         if (row['opening_hours']) {
             this.fillOpeningHours(row['opening_hours']);
         } else {
@@ -324,6 +446,51 @@ class CSVNavigator {
         }
 
         this.updateCounter();
+    }
+
+    fillDiscountsForm(discountsStr) {
+        const wrapper = document.getElementById("discounts-wrapper");
+        if (!wrapper) return;
+
+        wrapper.innerHTML = '';
+
+        let discounts = [];
+
+        if (discountsStr && discountsStr.trim()) {
+            try {
+                discounts = JSON.parse(discountsStr);
+                if (!Array.isArray(discounts)) {
+                    discounts = [];
+                }
+            } catch (e) {
+                console.log('Nie można sparsować zniżek jako JSON, używam pustej listy');
+                discounts = [];
+            }
+        }
+
+        if (discounts.length === 0) {
+            if (typeof addDiscountRow === 'function') {
+                addDiscountRow(wrapper);
+            }
+            return;
+        }
+
+        discounts.forEach(discount => {
+            if (typeof addDiscountRow === 'function') {
+                addDiscountRow(wrapper);
+
+                const lastRow = wrapper.lastElementChild;
+                if (lastRow) {
+                    const valueInput = lastRow.querySelector('.discount-value');
+                    const typeSelect = lastRow.querySelector('.discount-type');
+                    const conditionsInput = lastRow.querySelector('.discount-conditions');
+
+                    if (valueInput) valueInput.value = discount.value || '';
+                    if (typeSelect) typeSelect.value = discount.type || 'percent';
+                    if (conditionsInput) conditionsInput.value = discount.conditions || '';
+                }
+            }
+        });
     }
 
     fillOpeningHours(openingHoursStr) {
@@ -459,50 +626,6 @@ class CSVNavigator {
             this.clearLocalStorage();
             window.location.href = 'https://www.google.com/maps';
         }
-    }
-    goToNextLocation() {
-        const isVerified = document.getElementById('input-verified')?.checked || false;
-
-        if (isVerified && typeof formValidator !== 'undefined') {
-            const formData = {
-                name: document.getElementById('input-name')?.value || '',
-                address: document.getElementById('input-address')?.value || '',
-                phone: document.getElementById('input-phone')?.value || '',
-            };
-
-            const validationResult = formValidator.validate(formData, isVerified);
-
-            if (!validationResult.valid) {
-                formValidator.showErrors();
-                return false;
-            }
-
-            if (validationResult.data.phone) {
-                document.getElementById('input-phone').value = validationResult.data.phone;
-            }
-        }
-
-        this.saveCurrentRowData();
-
-        const nextRow = this.nextRow();
-
-        if (!nextRow) {
-            alert("To jest ostatni wiersz w pliku CSV!");
-            return false;
-        }
-
-        const coords = this.getCurrentCoordinates();
-
-        if (!coords) {
-            alert("Nie można odczytać współrzędnych z tego wiersza!");
-            return false;
-        }
-
-        console.log(`Przechodząc do wiersza ${this.currentIndex + 1}/${this.csvData.length}`);
-        console.log(`Współrzędne: ${coords.lat}, ${coords.lon}`);
-
-        this.updateGoogleMaps(coords.lat, coords.lon);
-        return true;
     }
 }
 
