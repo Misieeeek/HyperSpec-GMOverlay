@@ -12,7 +12,7 @@ Narzędzie stworzone na potrzeby koła naukowego HyperSpec AGH, do celów potwie
 1. Sklonuj to repozytorium do wybranego folderu:
 
    ```bash
-   git clone https://github.com/Misieeeek/Hyperspec-GMOverlay.git
+   git clone https://github.com/Misieeeek/HyperSpec-GMOverlay.git
    ```
 
 2. Wklej plik znizki.csv do sklonowanego repozytorium.
