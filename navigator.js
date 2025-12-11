@@ -203,6 +203,7 @@ class CSVNavigator {
 
     goToNextLocation() {
         const isVerified = document.getElementById('input-verified')?.checked || false;
+        const isSkip = document.getElementById('input-skip')?.checked || false;
 
         if (isVerified && typeof formValidator !== 'undefined') {
             const formData = {
@@ -225,27 +226,39 @@ class CSVNavigator {
 
         this.saveCurrentRowData();
 
-        const nextRow = this.nextRow();
-
-        if (!nextRow) {
-            alert("To jest ostatni wiersz w pliku CSV!");
-            return false;
+        if (typeof window.visualEffects !== 'undefined') {
+            if (isVerified) {
+                window.visualEffects.triggerConfetti();
+            } else if (isSkip) {
+                window.visualEffects.triggerTomatoes();
+            }
         }
 
-        const coords = this.getCurrentCoordinates();
+        const delay = (isVerified || isSkip) ? 1500 : 0;
 
-        if (!coords) {
-            alert("Nie można odczytać współrzędnych z tego wiersza!");
-            return false;
-        }
+        setTimeout(() => {
+            const nextRow = this.nextRow();
 
-        console.log(`Przechodząc do wiersza ${this.currentIndex + 1}/${this.csvData.length}`);
-        console.log(`Współrzędne: ${coords.lat}, ${coords.lon}`);
+            if (!nextRow) {
+                alert("To jest ostatni wiersz w pliku CSV!");
+                return false;
+            }
 
-        this.updateGoogleMaps(coords.lat, coords.lon);
+            const coords = this.getCurrentCoordinates();
+
+            if (!coords) {
+                alert("Nie można odczytać współrzędnych z tego wiersza!");
+                return false;
+            }
+
+            console.log(`Przechodząc do wiersza ${this.currentIndex + 1}/${this.csvData.length}`);
+            console.log(`Współrzędne: ${coords.lat}, ${coords.lon}`);
+
+            this.updateGoogleMaps(coords.lat, coords.lon);
+        }, delay);
+
         return true;
     }
-
     findAndFillRowByCoordinates(targetLat, targetLon) {
         console.log(`Szukam wiersza dla współrzędnych: ${targetLat}, ${targetLon}`);
 
@@ -317,7 +330,7 @@ class CSVNavigator {
         currentRow['lon'] = document.getElementById('input-lon')?.value || '';
 
         const discounts = this.collectDiscountsFromForm();
-        currentRow['student_discounts'] = JSON.stringify(discounts);
+        currentRow['discounts'] = JSON.stringify(discounts);
 
         currentRow['verified'] = document.getElementById('input-verified')?.checked ? 'true' : 'false';
         currentRow['skip'] = document.getElementById('input-skip')?.checked ? 'true' : 'false';
@@ -342,17 +355,20 @@ class CSVNavigator {
         rows.forEach(row => {
             const valueInput = row.querySelector(".discount-value");
             const typeSelect = row.querySelector(".discount-type");
+            const studentCheckbox = row.querySelector(".discount-student")
             const conditionsInput = row.querySelector(".discount-conditions");
 
             if (valueInput && typeSelect && conditionsInput) {
                 const value = parseFloat(valueInput.value);
                 const type = typeSelect.value;
+                const student = studentCheckbox ? studentCheckbox.checked : false;
                 const conditions = conditionsInput.value.trim();
 
                 if (!isNaN(value) && value > 0 && conditions) {
                     discounts.push({
                         value: value,
                         type: type,
+                        student: student,
                         conditions: conditions
                     });
                 }
@@ -437,7 +453,7 @@ class CSVNavigator {
             }
         });
 
-        this.fillDiscountsForm(row['student_discounts']);
+        this.fillDiscountsForm(row['discounts']);
 
         if (row['opening_hours']) {
             this.fillOpeningHours(row['opening_hours']);
@@ -483,10 +499,12 @@ class CSVNavigator {
                 if (lastRow) {
                     const valueInput = lastRow.querySelector('.discount-value');
                     const typeSelect = lastRow.querySelector('.discount-type');
+                    const studentCheckbox = lastRow.querySelector('.discount-student');
                     const conditionsInput = lastRow.querySelector('.discount-conditions');
 
                     if (valueInput) valueInput.value = discount.value || '';
                     if (typeSelect) typeSelect.value = discount.type || 'percent';
+                    if (studentCheckbox) studentCheckbox.checked = discount.student || false;
                     if (conditionsInput) conditionsInput.value = discount.conditions || '';
                 }
             }

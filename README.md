@@ -1,6 +1,6 @@
 # HyperSpec - GMOverlay
 
-Narzędzie stworzone na potrzeby koła naukowego HyperSpec AGH, do celów potwierdzania i zaktualizowania danych potencjalnych obiektów które oferują zniżki studenckie.
+Narzędzie stworzone na potrzeby koła naukowego HyperSpec AGH, do celów potwierdzania i zaktualizowania danych potencjalnych obiektów które oferują zniżki.
 
 ## Spis treści
 
@@ -65,4 +65,4 @@ W momencie gdy wszystkie dane zostaną zebrane oraz gdy zniżki zostaną wpisane
 
 ### Przycisk '⚠️ ZRESETUJ do pliku CSV' 
 
-Usuwa dane z LocalStorage. Najlepiej nie klikać. 
+Usuwa dane z LocalStorage. Klikaj wtedy, kiedy ładujesz nowego chunka.  

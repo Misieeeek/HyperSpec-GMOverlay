@@ -21,7 +21,7 @@ function addBackground() {
     background.style.boxSizing = "border-box";
 
     const title = document.createElement("h1");
-    title.innerText = "Hyperspec - GMOverlay";
+    title.innerText = "HyperSpec - GMOverlay";
     title.style.textAlign = "center";
     title.style.fontSize = "24px";
     title.style.margin = "0 0 30px 0";
@@ -35,7 +35,7 @@ function addIcon() {
 
     const icon = document.createElement("img");
     icon.src = chrome.runtime.getURL("icon.png");
-    icon.alt = "Hyperspec Logo";
+    icon.alt = "HyperSpec Logo";
     icon.style.position = "absolute";
     icon.style.top = "15px";
     icon.style.right = "20px";
@@ -116,7 +116,7 @@ function addInputFields() {
     addCategorySelect(background);
     addCoordinatesFields(background);
     addOpeningHours(background);
-    addStudentDiscountsFields(background);
+    addDiscountsFields(background);
     addUpdatedCheckbox(background);
     addSkipCheckbox(background);
     addButtonUpdateInfo();
@@ -284,12 +284,12 @@ function addOpeningHours(background) {
     background.appendChild(hoursContainer);
 }
 
-function addStudentDiscountsFields(background) {
+function addDiscountsFields(background) {
     const container = document.createElement("div");
     container.style.marginBottom = "20px";
 
     const label = document.createElement("label");
-    label.innerText = "Zniżki studenckie";
+    label.innerText = "Zniżki";
     Object.assign(label.style, {
         display: "block",
         marginBottom: "10px",
@@ -399,6 +399,25 @@ function addDiscountRow(wrapper) {
     typeContainer.appendChild(typeLabel);
     typeContainer.appendChild(typeSelect);
 
+
+    const studentContainer = document.createElement("div");
+    studentContainer.style.marginBottom = "10px";
+
+    const studentLabel = document.createElement("label");
+    studentLabel.innerText = "Tylko dla studentów?";
+    studentLabel.style.display = "block";
+    studentLabel.style.marginBottom = "5px";
+    studentLabel.style.fontSize = "13px";
+    studentLabel.style.fontWeight = "bold";
+
+    const studentBool = document.createElement("input");
+    studentBool.type = "checkbox";
+    studentBool.checked = false;
+    studentBool.className = "discount-student";
+
+    studentContainer.appendChild(studentLabel);
+    studentContainer.appendChild(studentBool);
+
     const conditionsContainer = document.createElement("div");
     conditionsContainer.style.marginBottom = "10px";
 
@@ -454,6 +473,7 @@ function addDiscountRow(wrapper) {
 
     row.appendChild(valueContainer);
     row.appendChild(typeContainer);
+    row.appendChild(studentContainer);
     row.appendChild(conditionsContainer);
     row.appendChild(removeBtn);
 
@@ -595,7 +615,7 @@ function collectFormData() {
         kategoria: document.getElementById("input-category").value,
         lat: document.getElementById("input-lat").value,
         lon: document.getElementById("input-lon").value,
-        znizki_studenckie: JSON.stringify(discounts),
+        znizki: JSON.stringify(discounts),
         zaktualizowano: document.getElementById("input-verified").checked
     };
 }
@@ -608,12 +628,14 @@ function collectDiscountsData() {
     rows.forEach(row => {
         const value = parseFloat(row.querySelector(".discount-value").value);
         const type = row.querySelector(".discount-type").value;
+        const student = row.querySelector(".discount-student").checked;
         const conditions = row.querySelector(".discount-conditions").value;
 
         if (!isNaN(value) && value > 0 && conditions.trim()) {
             discounts.push({
                 value: value,
                 type: type,
+                student: student,
                 conditions: conditions.trim()
             });
         }
