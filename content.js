@@ -117,8 +117,8 @@ function addInputFields() {
     addCoordinatesFields(background);
     addOpeningHours(background);
     addDiscountsFields(background);
-    addUpdatedCheckbox(background);
-    addSkipCheckbox(background);
+    addUpdatedRadio(background);
+    addSkipRadio(background);
     addButtonUpdateInfo();
 }
 
@@ -231,9 +231,10 @@ function addCoordinatesFields(background) {
     });
 }
 
-function addOpeningHours(background) {
-    const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
 
+
+function addOpeningHours(background) {
+    const days = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
     const hoursContainer = document.createElement("div");
     hoursContainer.style.marginBottom = "20px";
 
@@ -245,38 +246,116 @@ function addOpeningHours(background) {
     hoursLabel.style.fontSize = "14px";
     hoursLabel.style.color = "#333";
     hoursLabel.style.whiteSpace = "pre-line";
-
     hoursContainer.appendChild(hoursLabel);
 
-    days.forEach((day) => {
+    days.forEach((day, index) => {
         const row = document.createElement("div");
-        row.style.display = "flex";
+        row.style.display = "grid";
+        row.style.gridTemplateColumns = "20px 20px 90px 90px 90px 50px";
         row.style.alignItems = "center";
         row.style.marginBottom = "8px";
         row.style.gap = "10px";
 
         const dayLabel = document.createElement("span");
         dayLabel.innerText = day;
-        dayLabel.style.width = "100px";
         dayLabel.style.fontSize = "14px";
+
+        const closedCheckbox = document.createElement("input");
+        closedCheckbox.type = "checkbox";
+        closedCheckbox.id = `hours-${day}-closed`;
+        closedCheckbox.style.width = "18px";
+        closedCheckbox.style.height = "18px";
+        closedCheckbox.style.cursor = "pointer";
+        closedCheckbox.style.margin = "0";
+
+        const closedLabel = document.createElement("label");
+        closedLabel.innerText = "Zamknięte";
+        closedLabel.htmlFor = `hours-${day}-closed`;
+        closedLabel.style.fontSize = "12px";
+        closedLabel.style.cursor = "pointer";
+        closedLabel.style.margin = "0";
 
         const inputFrom = document.createElement("input");
         inputFrom.type = "time";
         inputFrom.id = `hours-${day}-from`;
-        inputFrom.style.flex = "1";
         inputFrom.style.padding = "6px";
+        inputFrom.style.width = "100%";
+        inputFrom.style.boxSizing = "border-box";
         inputFrom.setAttribute("lang", "pl");
 
         const inputTo = document.createElement("input");
         inputTo.type = "time";
         inputTo.id = `hours-${day}-to`;
-        inputTo.style.flex = "1";
         inputTo.style.padding = "6px";
+        inputTo.style.width = "100%";
+        inputTo.style.boxSizing = "border-box";
         inputTo.setAttribute("lang", "pl");
 
+        closedCheckbox.addEventListener("change", () => {
+            if (closedCheckbox.checked) {
+                inputFrom.value = "";
+                inputTo.value = "";
+                inputFrom.disabled = true;
+                inputTo.disabled = true;
+                inputFrom.style.backgroundColor = "#e0e0e0";
+                inputTo.style.backgroundColor = "#e0e0e0";
+            } else {
+                inputFrom.disabled = false;
+                inputTo.disabled = false;
+                inputFrom.style.backgroundColor = "";
+                inputTo.style.backgroundColor = "";
+            }
+        });
+
         row.appendChild(dayLabel);
+        row.appendChild(closedCheckbox);
+        row.appendChild(closedLabel);
         row.appendChild(inputFrom);
         row.appendChild(inputTo);
+
+        if (index < days.length - 1) {
+            const fillButton = document.createElement("button");
+            fillButton.innerText = "↓";
+            fillButton.style.padding = "6px 12px";
+            fillButton.style.fontSize = "16px";
+            fillButton.style.fontWeight = "bold";
+            fillButton.style.cursor = "pointer";
+            fillButton.style.backgroundColor = "#4CAF50";
+            fillButton.style.color = "white";
+            fillButton.style.border = "none";
+            fillButton.style.borderRadius = "4px";
+            fillButton.style.width = "100%";
+            fillButton.style.boxSizing = "border-box";
+            fillButton.title = "Wypełnij poniższe dni tymi samymi godzinami";
+
+            fillButton.addEventListener("click", (e) => {
+                e.preventDefault();
+                const fromValue = inputFrom.value;
+                const toValue = inputTo.value;
+                const isClosed = closedCheckbox.checked;
+
+                for (let i = index + 1; i < days.length; i++) {
+                    const nextDayFrom = document.getElementById(`hours-${days[i]}-from`);
+                    const nextDayTo = document.getElementById(`hours-${days[i]}-to`);
+                    const nextDayClosed = document.getElementById(`hours-${days[i]}-closed`);
+
+                    if (isClosed) {
+                        nextDayClosed.checked = true;
+                        nextDayClosed.dispatchEvent(new Event('change'));
+                    } else {
+                        nextDayClosed.checked = false;
+                        nextDayClosed.dispatchEvent(new Event('change'));
+                        nextDayFrom.value = fromValue;
+                        nextDayTo.value = toValue;
+                    }
+                }
+            });
+
+            row.appendChild(fillButton);
+        } else {
+            const emptySpace = document.createElement("div");
+            row.appendChild(emptySpace);
+        }
 
         hoursContainer.appendChild(row);
     });
@@ -337,6 +416,44 @@ function addDiscountRow(wrapper) {
     row.style.borderRadius = "5px";
     row.style.position = "relative";
 
+    const discountModeContainer = document.createElement("div");
+    discountModeContainer.style.marginBottom = "10px";
+
+    const discountModeLabel = document.createElement("label");
+    discountModeLabel.innerText = "Typ zniżki";
+    discountModeLabel.style.display = "block";
+    discountModeLabel.style.marginBottom = "5px";
+    discountModeLabel.style.fontSize = "13px";
+    discountModeLabel.style.fontWeight = "bold";
+
+    const discountModeSelect = document.createElement("select");
+    discountModeSelect.className = "discount-mode";
+    Object.assign(discountModeSelect.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    });
+
+    const modeOptions = [
+        { value: "single", text: "Wartość" },
+        { value: "range", text: "Zakres" },
+        { value: "dynamic", text: "Dynamiczne zniżki" },
+        { value: "unspecified", text: "Nieokreślony" }
+    ];
+
+    modeOptions.forEach(opt => {
+        const option = document.createElement("option");
+        option.value = opt.value;
+        option.innerText = opt.text;
+        discountModeSelect.appendChild(option);
+    });
+
+    discountModeContainer.appendChild(discountModeLabel);
+    discountModeContainer.appendChild(discountModeSelect);
+
     const valueContainer = document.createElement("div");
     valueContainer.style.marginBottom = "10px";
 
@@ -363,6 +480,55 @@ function addDiscountRow(wrapper) {
 
     valueContainer.appendChild(valueLabel);
     valueContainer.appendChild(valueInput);
+
+    const rangeContainer = document.createElement("div");
+    rangeContainer.style.marginBottom = "10px";
+    rangeContainer.style.display = "none";
+
+    const rangeLabel = document.createElement("label");
+    rangeLabel.innerText = "Zakres wartości";
+    rangeLabel.style.display = "block";
+    rangeLabel.style.marginBottom = "5px";
+    rangeLabel.style.fontSize = "13px";
+    rangeLabel.style.fontWeight = "bold";
+
+    const rangeInputsDiv = document.createElement("div");
+    rangeInputsDiv.style.display = "grid";
+    rangeInputsDiv.style.gridTemplateColumns = "1fr 1fr";
+    rangeInputsDiv.style.gap = "10px";
+
+    const valueFromInput = document.createElement("input");
+    valueFromInput.type = "number";
+    valueFromInput.step = "0.01";
+    valueFromInput.className = "discount-value-from";
+    valueFromInput.placeholder = "Od";
+    Object.assign(valueFromInput.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    });
+
+    const valueToInput = document.createElement("input");
+    valueToInput.type = "number";
+    valueToInput.step = "0.01";
+    valueToInput.className = "discount-value-to";
+    valueToInput.placeholder = "Do";
+    Object.assign(valueToInput.style, {
+        width: "100%",
+        padding: "8px",
+        fontSize: "14px",
+        border: "1px solid #ddd",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+    });
+
+    rangeInputsDiv.appendChild(valueFromInput);
+    rangeInputsDiv.appendChild(valueToInput);
+    rangeContainer.appendChild(rangeLabel);
+    rangeContainer.appendChild(rangeInputsDiv);
 
     const typeContainer = document.createElement("div");
     typeContainer.style.marginBottom = "10px";
@@ -393,30 +559,34 @@ function addDiscountRow(wrapper) {
     priceOption.value = "price";
     priceOption.innerText = "Cena (zł)";
 
-    typeSelect.appendChild(percentOption);
     typeSelect.appendChild(priceOption);
+    typeSelect.appendChild(percentOption);
 
     typeContainer.appendChild(typeLabel);
     typeContainer.appendChild(typeSelect);
 
-
     const studentContainer = document.createElement("div");
     studentContainer.style.marginBottom = "10px";
-
-    const studentLabel = document.createElement("label");
-    studentLabel.innerText = "Tylko dla studentów?";
-    studentLabel.style.display = "block";
-    studentLabel.style.marginBottom = "5px";
-    studentLabel.style.fontSize = "13px";
-    studentLabel.style.fontWeight = "bold";
+    studentContainer.style.display = "flex";
+    studentContainer.style.alignItems = "center";
+    studentContainer.style.gap = "10px";
 
     const studentBool = document.createElement("input");
     studentBool.type = "checkbox";
     studentBool.checked = false;
     studentBool.className = "discount-student";
+    studentBool.style.width = "18px";
+    studentBool.style.height = "18px";
+    studentBool.style.cursor = "pointer";
 
-    studentContainer.appendChild(studentLabel);
+    const studentLabel = document.createElement("label");
+    studentLabel.innerText = "Tylko dla studentów?";
+    studentLabel.style.fontSize = "13px";
+    studentLabel.style.fontWeight = "bold";
+    studentLabel.style.cursor = "pointer";
+
     studentContainer.appendChild(studentBool);
+    studentContainer.appendChild(studentLabel);
 
     const conditionsContainer = document.createElement("div");
     conditionsContainer.style.marginBottom = "10px";
@@ -443,6 +613,31 @@ function addDiscountRow(wrapper) {
 
     conditionsContainer.appendChild(conditionsLabel);
     conditionsContainer.appendChild(conditionsInput);
+
+    function updateVisibility() {
+        const mode = discountModeSelect.value;
+        valueContainer.style.display = "none";
+        rangeContainer.style.display = "none";
+        typeContainer.style.display = "none";
+        conditionsContainer.style.display = "block";
+
+        switch (mode) {
+            case "single":
+                valueContainer.style.display = "block";
+                typeContainer.style.display = "block";
+                break;
+            case "range":
+                rangeContainer.style.display = "block";
+                typeContainer.style.display = "block";
+                break;
+            case "dynamic":
+                break;
+            case "unspecified":
+                break;
+        }
+    }
+
+    discountModeSelect.addEventListener("change", updateVisibility);
 
     const removeBtn = document.createElement("button");
     removeBtn.innerText = "✕";
@@ -471,28 +666,34 @@ function addDiscountRow(wrapper) {
         }
     };
 
+    row.appendChild(discountModeContainer);
     row.appendChild(valueContainer);
+    row.appendChild(rangeContainer);
     row.appendChild(typeContainer);
     row.appendChild(studentContainer);
     row.appendChild(conditionsContainer);
     row.appendChild(removeBtn);
 
     wrapper.appendChild(row);
+
+    updateVisibility();
 }
 
-function addUpdatedCheckbox(background) {
+
+function addUpdatedRadio(background) {
     const container = document.createElement("div");
     container.style.marginBottom = "20px";
     container.style.display = "flex";
     container.style.alignItems = "center";
     container.style.gap = "10px";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = "input-verified";
-    checkbox.style.width = "20px";
-    checkbox.style.height = "20px";
-    checkbox.style.cursor = "pointer";
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.id = "input-verified";
+    radio.name = "status"
+    radio.style.width = "20px";
+    radio.style.height = "20px";
+    radio.style.cursor = "pointer";
 
     const label = document.createElement("label");
     label.innerText = "Potwierdzenie telefoniczne lub internetowe";
@@ -502,24 +703,25 @@ function addUpdatedCheckbox(background) {
     label.style.color = "#333";
     label.style.cursor = "pointer";
 
-    container.appendChild(checkbox);
+    container.appendChild(radio);
     container.appendChild(label);
     background.appendChild(container);
 }
 
-function addSkipCheckbox(background) {
+function addSkipRadio(background) {
     const container = document.createElement("div");
     container.style.marginBottom = "20px";
     container.style.display = "flex";
     container.style.alignItems = "center";
     container.style.gap = "10px";
 
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = "input-skip";
-    checkbox.style.width = "20px";
-    checkbox.style.height = "20px";
-    checkbox.style.cursor = "pointer";
+    const radio = document.createElement("input");
+    radio.type = "radio";
+    radio.id = "input-skip";
+    radio.name = "status"
+    radio.style.width = "20px";
+    radio.style.height = "20px";
+    radio.style.cursor = "pointer";
 
     const label = document.createElement("label");
     label.innerText = "Brak zniżek, informacji na temat obiektu lub obiekt jest nieczynny\\nie istnieje";
@@ -529,7 +731,7 @@ function addSkipCheckbox(background) {
     label.style.color = "#333";
     label.style.cursor = "pointer";
 
-    container.appendChild(checkbox);
+    container.appendChild(radio);
     container.appendChild(label);
     background.appendChild(container);
 }
@@ -606,6 +808,7 @@ function addButtonUpdateInfo() {
 
 function collectFormData() {
     const discounts = collectDiscountsData();
+    const openingHours = collectOpeningHoursData();
 
     return {
         nazwa: document.getElementById("input-name").value,
@@ -616,7 +819,9 @@ function collectFormData() {
         lat: document.getElementById("input-lat").value,
         lon: document.getElementById("input-lon").value,
         znizki: JSON.stringify(discounts),
-        zaktualizowano: document.getElementById("input-verified").checked
+        godziny_otwarcia: JSON.stringify(openingHours),
+        zaktualizowano: document.getElementById("input-verified").checked,
+        pomiń: document.getElementById("input-skip").checked
     };
 }
 
@@ -626,24 +831,86 @@ function collectDiscountsData() {
     const discounts = [];
 
     rows.forEach(row => {
-        const value = parseFloat(row.querySelector(".discount-value").value);
-        const type = row.querySelector(".discount-type").value;
+        const mode = row.querySelector(".discount-mode").value;
+        const type = row.querySelector(".discount-type")?.value;
         const student = row.querySelector(".discount-student").checked;
-        const conditions = row.querySelector(".discount-conditions").value;
+        const conditions = row.querySelector(".discount-conditions")?.value;
 
-        if (!isNaN(value) && value > 0 && conditions.trim()) {
-            discounts.push({
-                value: value,
-                type: type,
-                student: student,
-                conditions: conditions.trim()
-            });
+        let discount = {
+            mode: mode,
+            student: student
+        };
+
+        switch (mode) {
+            case "single":
+                const value = parseFloat(row.querySelector(".discount-value").value);
+                if (!isNaN(value) && value > 0 && conditions && conditions.trim()) {
+                    discount.value = value;
+                    discount.type = type;
+                    discount.conditions = conditions.trim();
+                    discounts.push(discount);
+                }
+                break;
+
+            case "range":
+                const valueFrom = parseFloat(row.querySelector(".discount-value-from").value);
+                const valueTo = parseFloat(row.querySelector(".discount-value-to").value);
+                if (!isNaN(valueFrom) && !isNaN(valueTo) && valueFrom > 0 && valueTo > 0 && conditions && conditions.trim()) {
+                    discount.valueFrom = valueFrom;
+                    discount.valueTo = valueTo;
+                    discount.type = type;
+                    discount.conditions = conditions.trim();
+                    discounts.push(discount);
+                }
+                break;
+
+            case "dynamic":
+                if (conditions && conditions.trim()) {
+                    discount.conditions = conditions.trim();
+                    discounts.push(discount);
+                }
+                break;
+
+            case "unspecified":
+                if (conditions && conditions.trim()) {
+                    discount.conditions = conditions.trim();
+                    discounts.push(discount);
+                }
+                break;
         }
     });
 
     return discounts;
 }
+function collectOpeningHoursData() {
+    const days = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
+    const openingHours = {};
 
+    days.forEach(day => {
+        const isClosed = document.getElementById(`hours-${day}-closed`)?.checked;
+
+        if (isClosed) {
+            openingHours[day] = {
+                closed: true
+            };
+        } else {
+            const from = document.getElementById(`hours-${day}-from`)?.value;
+            const to = document.getElementById(`hours-${day}-to`)?.value;
+
+            if (from && to) {
+                openingHours[day] = {
+                    closed: false,
+                    from: from,
+                    to: to
+                };
+            } else {
+                openingHours[day] = null;
+            }
+        }
+    });
+
+    return openingHours;
+}
 function addResetButton() {
     const background = document.getElementById("overlay-background");
 

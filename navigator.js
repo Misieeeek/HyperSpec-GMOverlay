@@ -259,6 +259,7 @@ class CSVNavigator {
 
         return true;
     }
+
     findAndFillRowByCoordinates(targetLat, targetLon) {
         console.log(`Szukam wiersza dla współrzędnych: ${targetLat}, ${targetLon}`);
 
@@ -353,25 +354,62 @@ class CSVNavigator {
         const discounts = [];
 
         rows.forEach(row => {
-            const valueInput = row.querySelector(".discount-value");
-            const typeSelect = row.querySelector(".discount-type");
-            const studentCheckbox = row.querySelector(".discount-student")
+            const mode = row.querySelector(".discount-mode")?.value;
+            const type = row.querySelector(".discount-type")?.value;
+            const studentCheckbox = row.querySelector(".discount-student");
             const conditionsInput = row.querySelector(".discount-conditions");
 
-            if (valueInput && typeSelect && conditionsInput) {
-                const value = parseFloat(valueInput.value);
-                const type = typeSelect.value;
-                const student = studentCheckbox ? studentCheckbox.checked : false;
-                const conditions = conditionsInput.value.trim();
+            const student = studentCheckbox ? studentCheckbox.checked : false;
+            const conditions = conditionsInput ? conditionsInput.value.trim() : '';
 
-                if (!isNaN(value) && value > 0 && conditions) {
-                    discounts.push({
-                        value: value,
-                        type: type,
-                        student: student,
-                        conditions: conditions
-                    });
-                }
+            let discount = {
+                mode: mode,
+                student: student
+            };
+
+            switch (mode) {
+                case "single":
+                    const valueInput = row.querySelector(".discount-value");
+                    if (valueInput) {
+                        const value = parseFloat(valueInput.value);
+                        if (!isNaN(value) && value > 0 && conditions) {
+                            discount.value = value;
+                            discount.type = type;
+                            discount.conditions = conditions;
+                            discounts.push(discount);
+                        }
+                    }
+                    break;
+
+                case "range":
+                    const valueFromInput = row.querySelector(".discount-value-from");
+                    const valueToInput = row.querySelector(".discount-value-to");
+                    if (valueFromInput && valueToInput) {
+                        const valueFrom = parseFloat(valueFromInput.value);
+                        const valueTo = parseFloat(valueToInput.value);
+                        if (!isNaN(valueFrom) && !isNaN(valueTo) && valueFrom > 0 && valueTo > 0 && conditions) {
+                            discount.valueFrom = valueFrom;
+                            discount.valueTo = valueTo;
+                            discount.type = type;
+                            discount.conditions = conditions;
+                            discounts.push(discount);
+                        }
+                    }
+                    break;
+
+                case "dynamic":
+                    if (conditions) {
+                        discount.conditions = conditions;
+                        discounts.push(discount);
+                    }
+                    break;
+
+                case "unspecified":
+                    if (conditions) {
+                        discount.conditions = conditions;
+                        discounts.push(discount);
+                    }
+                    break;
             }
         });
 
@@ -379,13 +417,18 @@ class CSVNavigator {
     }
 
     collectOpeningHoursFromForm() {
-        const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        const days = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
         const dayAbbrev = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
         const hoursMap = {};
 
         days.forEach((day, index) => {
+            const closedCheckbox = document.getElementById(`hours-${day}-closed`);
             const fromInput = document.getElementById(`hours-${day}-from`);
             const toInput = document.getElementById(`hours-${day}-to`);
+
+            if (closedCheckbox && closedCheckbox.checked) {
+                return;
+            }
 
             if (fromInput && toInput && fromInput.value && toInput.value) {
                 const timeRange = `${fromInput.value}-${toInput.value}`;
@@ -497,15 +540,33 @@ class CSVNavigator {
 
                 const lastRow = wrapper.lastElementChild;
                 if (lastRow) {
+                    const modeSelect = lastRow.querySelector('.discount-mode');
                     const valueInput = lastRow.querySelector('.discount-value');
+                    const valueFromInput = lastRow.querySelector('.discount-value-from');
+                    const valueToInput = lastRow.querySelector('.discount-value-to');
                     const typeSelect = lastRow.querySelector('.discount-type');
                     const studentCheckbox = lastRow.querySelector('.discount-student');
                     const conditionsInput = lastRow.querySelector('.discount-conditions');
 
-                    if (valueInput) valueInput.value = discount.value || '';
-                    if (typeSelect) typeSelect.value = discount.type || 'percent';
+                    if (modeSelect && discount.mode) {
+                        modeSelect.value = discount.mode;
+                        modeSelect.dispatchEvent(new Event('change'));
+                    }
+
+                    if (discount.mode === 'single') {
+                        if (valueInput) valueInput.value = discount.value || '';
+                        if (typeSelect) typeSelect.value = discount.type || 'percent';
+                        if (conditionsInput) conditionsInput.value = discount.conditions || '';
+                    } else if (discount.mode === 'range') {
+                        if (valueFromInput) valueFromInput.value = discount.valueFrom || '';
+                        if (valueToInput) valueToInput.value = discount.valueTo || '';
+                        if (typeSelect) typeSelect.value = discount.type || 'percent';
+                        if (conditionsInput) conditionsInput.value = discount.conditions || '';
+                    } else if (discount.mode === 'dynamic' || discount.mode === 'dynamic') {
+                        if (conditionsInput) conditionsInput.value = discount.conditions || '';
+                    }
+
                     if (studentCheckbox) studentCheckbox.checked = discount.student || false;
-                    if (conditionsInput) conditionsInput.value = discount.conditions || '';
                 }
             }
         });
@@ -517,7 +578,7 @@ class CSVNavigator {
             return;
         }
 
-        const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        const days = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
         const dayAbbrev = {
             'Mo': 0, 'Tu': 1, 'We': 2, 'Th': 3, 'Fr': 4, 'Sa': 5, 'Su': 6
         };
@@ -538,8 +599,14 @@ class CSVNavigator {
 
                 affectedDays.forEach(dayIndex => {
                     const dayName = days[dayIndex];
+                    const closedCheckbox = document.getElementById(`hours-${dayName}-closed`);
                     const fromInput = document.getElementById(`hours-${dayName}-from`);
                     const toInput = document.getElementById(`hours-${dayName}-to`);
+
+                    if (closedCheckbox) {
+                        closedCheckbox.checked = false;
+                        closedCheckbox.dispatchEvent(new Event('change'));
+                    }
 
                     if (fromInput) fromInput.value = openTime;
                     if (toInput) toInput.value = closeTime;
@@ -575,11 +642,17 @@ class CSVNavigator {
     }
 
     clearOpeningHours() {
-        const days = ["Poniedziałek", "Wtorek", "Środa", "Czwartek", "Piątek", "Sobota", "Niedziela"];
+        const days = ["Pn", "Wt", "Śr", "Cz", "Pt", "So", "Nd"];
 
         days.forEach(day => {
+            const closedCheckbox = document.getElementById(`hours-${day}-closed`);
             const fromInput = document.getElementById(`hours-${day}-from`);
             const toInput = document.getElementById(`hours-${day}-to`);
+
+            if (closedCheckbox) {
+                closedCheckbox.checked = false;
+                closedCheckbox.dispatchEvent(new Event('change'));
+            }
 
             if (fromInput) fromInput.value = '';
             if (toInput) toInput.value = '';
